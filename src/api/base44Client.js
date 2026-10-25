@@ -90,10 +90,22 @@ export const authApi = {
         });
     },
 
-    resetPassword: async (token, newPassword) => {
+    verifyResetToken: async ({ token, email, code }) => {
+        const params = new URLSearchParams();
+        if (token) params.set('token', token);
+        if (email) params.set('email', email);
+        if (code) params.set('code', code);
+        return fetchApi(`/api/auth/reset-password?${params.toString()}`);
+    },
+
+    resetPassword: async (tokenOrPayload, newPassword) => {
+        const payload =
+            typeof tokenOrPayload === 'object' && tokenOrPayload !== null
+                ? tokenOrPayload
+                : { token: tokenOrPayload, newPassword };
         return fetchApi('/api/auth/reset-password', {
             method: 'POST',
-            body: JSON.stringify({ token, newPassword }),
+            body: JSON.stringify(payload),
         });
     },
 

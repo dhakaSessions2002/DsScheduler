@@ -68,3 +68,72 @@ export async function sendOtpEmail(email, otp) {
         `,
     });
 }
+
+export async function sendPasswordResetEmail(email, resetLink, otpCode) {
+    if (!emailConfigured()) {
+        console.log(`[DEV EMAIL] Password reset for ${email}`);
+        console.log(`[DEV EMAIL] Reset Code: ${otpCode}`);
+        console.log(`[DEV EMAIL] Reset Link: ${resetLink}`);
+        return;
+    }
+
+    await transporter.sendMail({
+        from: `"DS Scheduler" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Reset Your DS Scheduler Password',
+        html: `
+            <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e5e5e5; border-radius: 10px;">
+                <h2 style="color: #111; margin-top: 0;">Password Reset Request</h2>
+                <p style="color: #333; line-height: 1.5;">
+                    We received a request to reset the password for your DS Scheduler account (<strong>${email}</strong>).
+                </p>
+                <p style="color: #333; line-height: 1.5;">
+                    Click the button below to choose or generate a new password:
+                </p>
+                <div style="margin: 28px 0; text-align: center;">
+                    <a href="${resetLink}" style="background-color: #080808; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                        Reset Password
+                    </a>
+                </div>
+                <p style="color: #333; line-height: 1.5; text-align: center;">
+                    Or enter this 6-digit verification code on the password reset page:
+                </p>
+                <div style="margin: 16px 0 24px; font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #080808; text-align: center; background: #f5f5f5; padding: 14px; border-radius: 8px;">
+                    ${otpCode}
+                </div>
+                <p style="color: #666; font-size: 12px; line-height: 1.5;">
+                    This link and code will expire in <strong>15 minutes</strong> and can only be used once. If you did not request a password reset, you can safely ignore this email—your password will remain unchanged.
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                <p style="color: #888; font-size: 11px; word-break: break-all;">
+                    If the button above doesn't work, copy and paste this URL into your browser:<br />
+                    ${resetLink}
+                </p>
+            </div>
+        `,
+    });
+}
+
+export async function sendPasswordChangedEmail(email) {
+    if (!emailConfigured()) {
+        console.log(`[DEV EMAIL] Password changed confirmation for ${email}`);
+        return;
+    }
+
+    await transporter.sendMail({
+        from: `"DS Scheduler" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Your DS Scheduler Password Was Changed',
+        html: `
+            <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e5e5e5; border-radius: 10px;">
+                <h2 style="color: #111; margin-top: 0;">Password Updated Successfully</h2>
+                <p style="color: #333; line-height: 1.5;">
+                    The password for your DS Scheduler account (<strong>${email}</strong>) was just changed.
+                </p>
+                <p style="color: #666; font-size: 13px; line-height: 1.5;">
+                    If you made this change, no further action is needed. If you did not authorize this change, please reset your password immediately or contact your workspace administrator.
+                </p>
+            </div>
+        `,
+    });
+}

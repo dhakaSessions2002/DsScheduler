@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authApi } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2, Shield, User, Eye, EyeOff } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, Shield, User, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const passwordResetSuccess = searchParams.get("reset") === "1";
+    const registeredSuccess = searchParams.get("registered") === "1";
+
     const [mode, setMode] = useState("employee");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -39,6 +43,10 @@ export default function LoginPage() {
         }
     };
 
+    const forgotPasswordHref = email.trim()
+        ? `/forgot-password?email=${encodeURIComponent(email.trim())}`
+        : "/forgot-password";
+
     return (
         <AuthLayout
             icon={LogIn}
@@ -60,6 +68,20 @@ export default function LoginPage() {
                     label="Admin"
                 />
             </div>
+
+            {passwordResetSuccess && !error && (
+                <div className="mb-4 p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <span>Your password has been reset. Sign in with your new password below.</span>
+                </div>
+            )}
+
+            {registeredSuccess && !error && (
+                <div className="mb-4 p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <span>Account created! Please sign in to verify your email.</span>
+                </div>
+            )}
 
             {error && (
                 <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-medium">
@@ -89,7 +111,7 @@ export default function LoginPage() {
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password" className="text-[#C4C4C4]">Password</Label>
-                        <Link href="/forgot-password" className="text-xs text-[#C4C4C4] hover:text-[#FFFFFF] hover:underline">
+                        <Link href={forgotPasswordHref} className="text-xs text-[#C4C4C4] hover:text-[#FFFFFF] hover:underline">
                             Forgot password?
                         </Link>
                     </div>
@@ -157,6 +179,20 @@ export default function LoginPage() {
                 </p>
             )}
         </AuthLayout>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex min-h-screen items-center justify-center bg-[#080808]">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#FFFFFF]" />
+                </div>
+            }
+        >
+            <LoginForm />
+        </Suspense>
     );
 }
 
