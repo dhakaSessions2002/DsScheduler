@@ -56,15 +56,6 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
         cancelAction();
     };
 
-    if (records.length === 0) {
-        return (
-            <div className="rounded-[6px] border border-[#333333] bg-[#141414] p-10 text-center">
-                <p className="text-[13px] text-[#C4C4C4]">
-                    No employees yet. When someone signs in, their request will appear here for approval.
-                </p>
-            </div>
-        );
-    }
 
     return (
         <div>
@@ -87,6 +78,14 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                 </button>
             </form>
 
+            {records.length === 0 ? (
+                <div className="rounded-[6px] border border-[#333333] bg-[#141414] p-10 text-center">
+                    <p className="text-[13px] text-[#C4C4C4]">
+                        No employees yet. You can invite team members using the form above, or when someone signs in, their request will appear here for approval.
+                    </p>
+                </div>
+            ) : (
+                <>
             {/* Tabs */}
             <div className="mb-4 flex flex-wrap gap-1 rounded-[6px] border border-[#333333] bg-[#080808] p-1">
                 {TABS.map((t) => {
@@ -285,6 +284,8 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                         );
                     })}
                 </div>
+            )}
+                </>
             )}
         </div>
     );

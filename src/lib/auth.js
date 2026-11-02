@@ -86,8 +86,20 @@ export async function seedAdmin() {
             role: 'admin',
         });
         console.log('Admin user seeded:', adminEmail);
-    } else if (existing.role !== 'admin') {
-        existing.role = 'admin';
-        await existing.save();
+    } else {
+        let changed = false;
+        if (existing.role !== 'admin') {
+            existing.role = 'admin';
+            changed = true;
+        }
+        const isMatch = await comparePassword(adminPassword, existing.password);
+        if (!isMatch) {
+            existing.password = await hashPassword(adminPassword);
+            changed = true;
+        }
+        if (changed) {
+            await existing.save();
+            console.log('Admin user updated:', adminEmail);
+        }
     }
 }
