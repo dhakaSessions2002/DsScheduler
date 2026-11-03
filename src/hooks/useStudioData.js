@@ -146,6 +146,20 @@ export function useStudioData(user) {
         await loadAll();
     }, [notifications, callApi, loadAll]);
 
+    const deleteNotification = useCallback(
+        async (notificationId) => {
+            await callApi('deleteNotification', { notificationId });
+            await loadAll();
+        },
+        [callApi, loadAll]
+    );
+
+    const clearAllNotifications = useCallback(async () => {
+        if (!notifications.length) return;
+        await callApi('clearNotifications');
+        await loadAll();
+    }, [notifications.length, callApi, loadAll]);
+
     const deleteTask = useCallback(
         async (task) => {
             await callApi('deleteTask', { taskId: task.id });
@@ -247,6 +261,8 @@ export function useStudioData(user) {
         submitLeave,
         respondLeave,
         markAllRead,
+        deleteNotification,
+        clearAllNotifications,
         deleteTask,
         updateTaskNotes,
         inviteEmployee,

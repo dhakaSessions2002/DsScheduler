@@ -229,14 +229,31 @@ export async function POST(request) {
             case 'submitLeave': {
                 await requireApproved(user);
                 const d = body.leave || {};
+                const requesterName = user.full_name || user.email || 'Employee';
                 await LeaveRequest.create({
                     start_date: d.start_date,
                     end_date: d.end_date,
                     reason: d.reason,
                     user_id: user.id,
-                    user_name: user.full_name || user.email || '',
+                    user_name: requesterName,
                     status: 'pending',
                 });
+
+                // Notify admins of the new leave request
+                try {
+                    const admins = await User.find({ role: 'admin' });
+                    for (const adm of admins) {
+                        await Notification.create({
+                            user_id: adm._id,
+                            type: 'leave_requested',
+                            message: `Leave request from ${requesterName} (${d.start_date} to ${d.end_date})${d.reason ? `: "${d.reason}"` : ''}`,
+                            read: false,
+                        });
+                    }
+                } catch (notifErr) {
+                    console.error('Failed to notify admins of leave request:', notifErr);
+                }
+
                 return NextResponse.json({ ok: true });
             }
 
@@ -261,6 +278,26 @@ export async function POST(request) {
                         { _id: { $in: ids }, user_id: user.id },
                         { $set: { read: true } }
                     );
+                }
+                return NextResponse.json({ ok: true });
+            }
+
+            case 'deleteNotification': {
+                await requireApproved(user);
+                const { notificationId } = body;
+                if (notificationId && mongoose.Types.ObjectId.isValid(String(notificationId))) {
+                    await Notification.deleteOne({ _id: notificationId, user_id: user.id });
+                }
+                return NextResponse.json({ ok: true });
+            }
+
+            case 'clearNotifications': {
+                await requireApproved(user);
+                const ids = body.ids || [];
+                if (ids.length) {
+                    await Notification.deleteMany({ _id: { $in: ids }, user_id: user.id });
+                } else {
+                    await Notification.deleteMany({ user_id: user.id });
                 }
                 return NextResponse.json({ ok: true });
             }

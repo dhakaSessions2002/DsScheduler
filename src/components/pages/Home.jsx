@@ -32,6 +32,8 @@ export default function Home() {
         submitLeave,
         respondLeave,
         markAllRead,
+        deleteNotification,
+        clearAllNotifications,
         deleteTask,
         updateTaskNotes,
         removeEmployee,
@@ -60,6 +62,8 @@ export default function Home() {
     const pendingCount = activeTasks.filter((t) => t.status !== 'completed').length;
     const criticalCount = activeTasks.filter((t) => getPendingWarning(t)?.level === 3).length;
     const pendingAccessCount = isAdmin ? (accessRecords || []).filter(r => r.status === 'pending').length : 0;
+    const pendingLeaveCount = isAdmin ? (leaveRequests || []).filter(r => r.status === 'pending').length : 0;
+    const totalAlertsCount = unreadCount + pendingAccessCount + pendingLeaveCount;
 
     const visibleTasks = isAdmin ? tasks : myTasks;
     const activeVisibleTasks = visibleTasks.filter((t) => !t.deleted);
@@ -101,7 +105,7 @@ export default function Home() {
     }
 
     return (
-        <Layout view={view} setView={setView} unreadCount={unreadCount + pendingAccessCount} chatUnreadCount={chatUnreadCount} isAdmin={isAdmin}>
+        <Layout view={view} setView={setView} unreadCount={totalAlertsCount} chatUnreadCount={chatUnreadCount} isAdmin={isAdmin}>
             <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8 sm:py-10">
                 {/* Hero header */}
                 <header className="mb-8">
@@ -114,7 +118,7 @@ export default function Home() {
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                         <Stat label="Pending tasks" value={pendingCount} onClick={() => { setView('tasks'); setTaskFilter('pending'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
                         <Stat label={isAdmin ? 'Total active' : 'My active tasks'} value={activeVisibleTasks.length} onClick={() => { setView('tasks'); setTaskFilter('all'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
-                        <Stat label="Unread alerts" value={unreadCount + pendingAccessCount} accent={(unreadCount + pendingAccessCount) > 0} onClick={() => handleStatClick('notifications')} />
+                        <Stat label="Unread alerts" value={totalAlertsCount} accent={totalAlertsCount > 0} onClick={() => handleStatClick('notifications')} />
                         {isAdmin && (
                             <Stat label="Pending 3+ days" value={criticalCount} accentColor={criticalCount > 0 ? '#ef4444' : undefined} onClick={() => { setView('tasks'); setTaskFilter('critical'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
                         )}
@@ -250,11 +254,16 @@ export default function Home() {
                     <NotificationsPanel
                         notifications={notifications}
                         onMarkAllRead={markAllRead}
+                        onDeleteNotification={deleteNotification}
+                        onClearAllNotifications={clearAllNotifications}
                         isAdmin={isAdmin}
                         accessRecords={accessRecords}
+                        leaveRequests={leaveRequests}
                         onApprove={approveEmployee}
                         onDeny={denyEmployee}
+                        onRespondLeave={respondLeave}
                         onGoToTeam={() => setView('team')}
+                        onGoToLeave={() => setView('leave')}
                     />
                 )}
             </div>
