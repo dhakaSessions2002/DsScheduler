@@ -1,5 +1,5 @@
 Live link:
-https://ds-scheduler-website-demo.vercel.app/
+https://ds-scheduler.vercel.app/login
 
 # DS Scheduler — Dhaka Sessions Task Scheduler
 
